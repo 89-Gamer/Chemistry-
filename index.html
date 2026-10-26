@@ -1,0 +1,526 @@
+```html
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alkuainetestiharjoitus - Kemia</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-bounce:active {
+            transform: scale(0.97);
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid font-mono">Fe</i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-white leading-tight">Alkuainevisailu</h1>
+                    <p class="text-xs text-slate-400">Kemian koeharjoittelu (Suomi - Merkit)</p>
+                </div>
+            </div>
+            <div id="quiz-badge" class="hidden sm:flex items-center space-x-2 bg-slate-700/50 px-3 py-1.5 rounded-lg border border-slate-600/50 text-xs font-medium text-slate-300">
+                <i class="fa-solid fa-graduation-cap text-indigo-400"></i>
+                <span id="quiz-mode-label">50 Alkuainetta</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="w-full max-w-2xl">
+
+            <!-- START SCREEN -->
+            <div id="start-card" class="bg-slate-800 border border-slate-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl text-center">
+                <div class="w-20 h-20 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-3xl shadow-inner">
+                    <i class="fa-solid fa-atom animate-pulse"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-white mb-3">Valmistaudu kemian kokeeseen!</h2>
+                <p class="text-slate-400 mb-6 text-sm sm:text-base max-w-md mx-auto">
+                    Harjoittele kaikkien 50 alkuaineen suomenkielisiä nimiä ja kemiallisia merkkejä. Ei järjestyslukuja, vain 100% tehokasta kertausta.
+                </p>
+
+                <!-- Settings / Mode options -->
+                <div class="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 mb-8 max-w-md mx-auto text-left space-y-3">
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Valitse Kysymystyyppi</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button type="button" onclick="setMode('mix')" id="mode-mix" class="mode-btn px-3 py-2.5 rounded-lg text-xs font-semibold border bg-indigo-600 text-white border-indigo-500 flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-shuffle"></i> Sekalainen
+                        </button>
+                        <button type="button" onclick="setMode('sym-to-name')" id="mode-sym-to-name" class="mode-btn px-3 py-2.5 rounded-lg text-xs font-semibold border bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750 flex items-center justify-center gap-2 transition">
+                            Fe <i class="fa-solid fa-arrow-right text-xs"></i> Rauta
+                        </button>
+                        <button type="button" onclick="setMode('name-to-sym')" id="mode-name-to-sym" class="mode-btn px-3 py-2.5 rounded-lg text-xs font-semibold border bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750 flex items-center justify-center gap-2 transition">
+                            Rauta <i class="fa-solid fa-arrow-right text-xs"></i> Fe
+                        </button>
+                    </div>
+                    
+                    <div class="pt-2 border-t border-slate-800 flex justify-between items-center text-xs text-slate-400">
+                        <span>Kysymysten määrä:</span>
+                        <select id="question-count" class="bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                            <option value="10">10 kysymystä</option>
+                            <option value="20" selected>20 kysymystä</option>
+                            <option value="50">Kaikki 50 alkuainetta</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="startQuiz()" class="btn-bounce bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg shadow-indigo-600/30 transition-all text-lg w-full sm:w-auto inline-flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i> Aloita Testi
+                </button>
+            </div>
+
+            <!-- QUIZ CARD -->
+            <div id="quiz-card" class="hidden bg-slate-800 border border-slate-700/80 rounded-2xl p-5 sm:p-8 shadow-2xl relative">
+                
+                <!-- Progress Header -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center text-sm font-semibold mb-2">
+                        <span id="question-tracker" class="text-indigo-400">Kysymys 1/20</span>
+                        <span id="score-tracker" class="text-slate-400"><i class="fa-solid fa-check text-emerald-400 mr-1"></i>Pisteet: 0</span>
+                    </div>
+                    <!-- Progress Bar Track -->
+                    <div class="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden p-0.5 border border-slate-700/50">
+                        <div id="progress-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 rounded-full transition-all duration-300 w-0"></div>
+                    </div>
+                </div>
+
+                <!-- Main Prompt Box -->
+                <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-6 text-center mb-6 shadow-inner relative overflow-hidden">
+                    <span id="prompt-subtitle" class="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">Mikä on tämän alkuaineen nimi?</span>
+                    <h3 id="prompt-title" class="text-4xl sm:text-5xl font-black text-white tracking-wide">Fe</h3>
+                </div>
+
+                <!-- Answer Options Grid (Physical Clickable Buttons) -->
+                <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                    <!-- Buttons inserted dynamically -->
+                </div>
+
+                <!-- Feedback Banner & Next Button -->
+                <div id="feedback-panel" class="hidden rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 transition-all">
+                    <div class="flex items-center gap-3">
+                        <div id="feedback-icon-box" class="w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0">
+                            <!-- Icon here -->
+                        </div>
+                        <div>
+                            <h4 id="feedback-title" class="font-bold text-sm">Oikein!</h4>
+                            <p id="feedback-detail" class="text-xs opacity-90">Fe = rauta</p>
+                        </div>
+                    </div>
+                    <button id="next-btn" onclick="nextQuestion()" class="btn-bounce bg-white text-slate-900 font-bold px-5 py-2.5 rounded-lg shadow hover:bg-slate-100 transition flex items-center justify-center gap-2 text-sm w-full sm:w-auto">
+                        Seuraava <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RESULTS CARD -->
+            <div id="result-card" class="hidden bg-slate-800 border border-slate-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl">
+                <div class="text-center mb-6">
+                    <div id="result-badge" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg border">
+                        <i id="result-icon" class="fa-solid fa-trophy"></i>
+                    </div>
+                    <h2 id="result-title" class="text-2xl sm:text-3xl font-extrabold text-white mb-1">Loistavaa työtä!</h2>
+                    <p id="result-subtitle" class="text-slate-400 text-sm">Testi suoritettu onnistuneesti.</p>
+                </div>
+
+                <!-- Big Score Callout -->
+                <div class="bg-slate-900/80 border border-slate-700/60 rounded-xl p-5 mb-6 text-center flex justify-around items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 uppercase font-semibold block">Pisteet</span>
+                        <span id="final-score" class="text-3xl font-black text-indigo-400">18 / 20</span>
+                    </div>
+                    <div class="h-10 w-px bg-slate-800"></div>
+                    <div>
+                        <span class="text-xs text-slate-400 uppercase font-semibold block">Tulos</span>
+                        <span id="final-percent" class="text-3xl font-black text-emerald-400">90%</span>
+                    </div>
+                </div>
+
+                <!-- Review / Errors Section -->
+                <div id="review-container" class="mb-6">
+                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Kertaus: Kertaa nämä vielä</h3>
+                    <div id="review-list" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                        <!-- Dynamic error list items -->
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button onclick="restartQuiz()" class="btn-bounce flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i> Tee Uusi Testi
+                    </button>
+                    <button onclick="returnToMenu()" class="btn-bounce bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-3 px-5 rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-house"></i> Valikkoon
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-4 text-center text-xs text-slate-500 border-t border-slate-800/80">
+        <p>Kemian koevalmentaja • Kaikki 50 alkuainetta suomeksi</p>
+    </footer>
+
+    <!-- Quiz Logic JavaScript -->
+    <script>
+        // Full Element Dataset (50 items strictly matching user's chart)
+        const ELEMENTS_DATA = [
+            { symbol: 'H', name: 'vety' },
+            { symbol: 'He', name: 'helium' },
+            { symbol: 'Li', name: 'litium' },
+            { symbol: 'Be', name: 'beryllium' },
+            { symbol: 'B', name: 'boori' },
+            { symbol: 'C', name: 'hiili' },
+            { symbol: 'N', name: 'typpi' },
+            { symbol: 'O', name: 'happi' },
+            { symbol: 'F', name: 'fluori' },
+            { symbol: 'Ne', name: 'neon' },
+            { symbol: 'Na', name: 'natrium' },
+            { symbol: 'Mg', name: 'magnesium' },
+            { symbol: 'Al', name: 'alumiini' },
+            { symbol: 'Si', name: 'pii' },
+            { symbol: 'P', name: 'fosfori' },
+            { symbol: 'S', name: 'rikki' },
+            { symbol: 'Cl', name: 'kloori' },
+            { symbol: 'Ar', name: 'argon' },
+            { symbol: 'K', name: 'kalium' },
+            { symbol: 'Ca', name: 'kalsium' },
+            { symbol: 'Sc', name: 'skandium' },
+            { symbol: 'Ti', name: 'titaani' },
+            { symbol: 'V', name: 'vanadiini' },
+            { symbol: 'Cr', name: 'kromi' },
+            { symbol: 'Mn', name: 'mangaani' },
+            { symbol: 'Fe', name: 'rauta' },
+            { symbol: 'Co', name: 'koboltti' },
+            { symbol: 'Ni', name: 'nikkeli' },
+            { symbol: 'Cu', name: 'kupari' },
+            { symbol: 'Zn', name: 'sinkki' },
+            { symbol: 'Ga', name: 'gallium' },
+            { symbol: 'Ge', name: 'germanium' },
+            { symbol: 'As', name: 'arseeni' },
+            { symbol: 'Se', name: 'seleeni' },
+            { symbol: 'Br', name: 'bromi' },
+            { symbol: 'Kr', name: 'krypton' },
+            { symbol: 'Zr', name: 'zirkonium' },
+            { symbol: 'Mo', name: 'molybdeeni' },
+            { symbol: 'Pd', name: 'palladium' },
+            { symbol: 'Ag', name: 'hopea' },
+            { symbol: 'Cd', name: 'kadmium' },
+            { symbol: 'Sn', name: 'tina' },
+            { symbol: 'I', name: 'jodi' },
+            { symbol: 'W', name: 'volframi' },
+            { symbol: 'Pt', name: 'platina' },
+            { symbol: 'Au', name: 'kulta' },
+            { symbol: 'Hg', name: 'elohopea' },
+            { symbol: 'Pb', name: 'lyijy' },
+            { symbol: 'Bi', name: 'vismutti' },
+            { symbol: 'U', name: 'uraani' }
+        ];
+
+        // State Variables
+        let currentMode = 'mix'; // 'mix', 'sym-to-name', 'name-to-sym'
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let missedQuestions = [];
+        let isAnswered = false;
+
+        // UI Mode Selector
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-500');
+                btn.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+            });
+
+            const activeBtn = document.getElementById(`mode-${mode}`);
+            activeBtn.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+            activeBtn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500');
+        }
+
+        // Shuffle Utility Array
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Start Quiz Generation
+        function startQuiz() {
+            const requestedCount = parseInt(document.getElementById('question-count').value);
+            const shuffledPool = shuffleArray(ELEMENTS_DATA);
+            const selectedElements = shuffledPool.slice(0, Math.min(requestedCount, ELEMENTS_DATA.length));
+
+            questions = selectedElements.map(item => {
+                let type = currentMode;
+                if (type === 'mix') {
+                    type = Math.random() < 0.5 ? 'sym-to-name' : 'name-to-sym';
+                }
+
+                // Generate 3 wrong options
+                const wrongCandidates = ELEMENTS_DATA.filter(el => el.symbol !== item.symbol);
+                const shuffledWrong = shuffleArray(wrongCandidates).slice(0, 3);
+
+                let correctAnswerText = '';
+                let promptText = '';
+                let subtitleText = '';
+                let optionsList = [];
+
+                if (type === 'sym-to-name') {
+                    promptText = item.symbol;
+                    subtitleText = 'Mikä on tämän alkuaineen suomenkielinen nimi?';
+                    correctAnswerText = item.name;
+                    optionsList = shuffleArray([item.name, ...shuffledWrong.map(w => w.name)]);
+                } else {
+                    promptText = item.name;
+                    subtitleText = 'Mikä on tämän alkuaineen kemiallinen merkki?';
+                    correctAnswerText = item.symbol;
+                    optionsList = shuffleArray([item.symbol, ...shuffledWrong.map(w => w.symbol)]);
+                }
+
+                return {
+                    element: item,
+                    type: type,
+                    prompt: promptText,
+                    subtitle: subtitleText,
+                    correctAnswer: correctAnswerText,
+                    options: optionsList
+                };
+            });
+
+            // Reset Game State
+            currentQuestionIndex = 0;
+            score = 0;
+            missedQuestions = [];
+
+            // UI Screen Switching
+            document.getElementById('start-card').classList.add('hidden');
+            document.getElementById('result-card').classList.add('hidden');
+            document.getElementById('quiz-card').classList.remove('hidden');
+
+            renderQuestion();
+        }
+
+        // Render Active Question
+        function renderQuestion() {
+            isAnswered = false;
+            const q = questions[currentQuestionIndex];
+
+            // Update Progress Header
+            document.getElementById('question-tracker').innerText = `Kysymys ${currentQuestionIndex + 1}/${questions.length}`;
+            document.getElementById('score-tracker').innerHTML = `<i class="fa-solid fa-check text-emerald-400 mr-1"></i>Pisteet: ${score}`;
+            
+            const progressPercent = ((currentQuestionIndex) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            // Prompt
+            document.getElementById('prompt-subtitle').innerText = q.subtitle;
+            document.getElementById('prompt-title').innerText = q.prompt;
+
+            // Reset Feedback Panel
+            document.getElementById('feedback-panel').classList.add('hidden');
+
+            // Render Option Buttons
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => checkAnswer(opt, btn);
+                btn.className = `btn-option btn-bounce w-full bg-slate-900/90 hover:bg-slate-700/80 text-white font-semibold py-4 px-5 rounded-xl border border-slate-700/80 hover:border-indigo-500/50 text-left flex items-center justify-between transition group`;
+                
+                btn.innerHTML = `
+                    <span class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 text-xs flex items-center justify-center font-bold group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-500 transition">${String.fromCharCode(65 + idx)}</span>
+                        <span class="text-base sm:text-lg font-medium">${opt}</span>
+                    </span>
+                    <i class="fa-regular fa-circle text-slate-600 group-hover:text-indigo-400 transition text-sm"></i>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // Check Clicked Option
+        function checkAnswer(selectedOption, clickedBtn) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const q = questions[currentQuestionIndex];
+            const isCorrect = selectedOption === q.correctAnswer;
+
+            const allButtons = document.querySelectorAll('.btn-option');
+            allButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('hover:bg-slate-700/80', 'btn-bounce', 'group');
+            });
+
+            const feedbackPanel = document.getElementById('feedback-panel');
+            const feedbackIconBox = document.getElementById('feedback-icon-box');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackDetail = document.getElementById('feedback-detail');
+
+            if (isCorrect) {
+                score++;
+                // Highlight Selected Button as Green
+                clickedBtn.classList.remove('bg-slate-900/90', 'border-slate-700/80');
+                clickedBtn.classList.add('bg-emerald-950/80', 'border-emerald-500', 'text-emerald-200');
+                clickedBtn.querySelector('i').className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+
+                // Panel styling
+                feedbackPanel.className = 'rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 transition-all bg-emerald-950/60 border border-emerald-800/60 text-emerald-100';
+                feedbackIconBox.className = 'w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+                feedbackIconBox.innerHTML = '<i class="fa-solid fa-check"></i>';
+                feedbackTitle.innerText = 'Oikein! Hienoa työtä.';
+                feedbackDetail.innerText = `${q.element.symbol} = ${q.element.name}`;
+            } else {
+                // Record error for review
+                missedQuestions.push({
+                    prompt: q.prompt,
+                    userAnswer: selectedOption,
+                    correctAnswer: q.correctAnswer,
+                    element: q.element
+                });
+
+                // Highlight Wrong Button as Red
+                clickedBtn.classList.remove('bg-slate-900/90', 'border-slate-700/80');
+                clickedBtn.classList.add('bg-rose-950/80', 'border-rose-500', 'text-rose-200');
+                clickedBtn.querySelector('i').className = 'fa-solid fa-circle-xmark text-rose-400 text-lg';
+
+                // Find & Highlight Correct Option as Green
+                allButtons.forEach(btn => {
+                    if (btn.innerText.includes(q.correctAnswer)) {
+                        btn.classList.remove('bg-slate-900/90', 'border-slate-700/80');
+                        btn.classList.add('bg-emerald-950/50', 'border-emerald-600/70', 'text-emerald-300');
+                        btn.querySelector('i').className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+                    }
+                });
+
+                // Panel styling
+                feedbackPanel.className = 'rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 transition-all bg-rose-950/60 border border-rose-800/60 text-rose-100';
+                feedbackIconBox.className = 'w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0 bg-rose-500/20 text-rose-400 border border-rose-500/30';
+                feedbackIconBox.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                feedbackTitle.innerText = 'Väärin!';
+                feedbackDetail.innerText = `Oikea vastaus on: ${q.correctAnswer} (${q.element.symbol} = ${q.element.name})`;
+            }
+
+            feedbackPanel.classList.remove('hidden');
+        }
+
+        // Advance to Next Question or Summary
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Display Final Summary Screen
+        function showResults() {
+            document.getElementById('quiz-card').classList.add('hidden');
+            document.getElementById('result-card').classList.remove('hidden');
+
+            const total = questions.length;
+            const percentage = Math.round((score / total) * 100);
+
+            document.getElementById('final-score').innerText = `${score} / ${total}`;
+            document.getElementById('final-percent').innerText = `${percentage}%`;
+
+            const badge = document.getElementById('result-badge');
+            const icon = document.getElementById('result-icon');
+            const title = document.getElementById('result-title');
+            const subtitle = document.getElementById('result-subtitle');
+
+            if (percentage === 100) {
+                badge.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg border bg-emerald-500/20 text-emerald-400 border-emerald-500/40 animate-pulse-subtle';
+                icon.className = 'fa-solid fa-crown';
+                title.innerText = 'Täydelliset pisteet! 🏆';
+                subtitle.innerText = 'Olet täysin valmis huomiseen kokeeseen!';
+            } else if (percentage >= 80) {
+                badge.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg border bg-indigo-500/20 text-indigo-400 border-indigo-500/40';
+                icon.className = 'fa-solid fa-trophy';
+                title.innerText = 'Hienoa työtä! 🎉';
+                subtitle.innerText = 'Osaat alkuaineet todella hyvin!';
+            } else if (percentage >= 50) {
+                badge.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg border bg-amber-500/20 text-amber-400 border-amber-500/40';
+                icon.className = 'fa-solid fa-star-half-stroke';
+                title.innerText = 'Hyvä yritys!';
+                subtitle.innerText = 'Kertaa vielä muutama väärin mennyt kohta.';
+            } else {
+                badge.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg border bg-rose-500/20 text-rose-400 border-rose-500/40';
+                icon.className = 'fa-solid fa-book-open';
+                title.innerText = 'Tarvitsee vielä treeniä';
+                subtitle.innerText = 'Ota uusi kierros ja vahvista muistiasi!';
+            }
+
+            // Render Missed Questions Review
+            const reviewContainer = document.getElementById('review-container');
+            const reviewList = document.getElementById('review-list');
+            reviewList.innerHTML = '';
+
+            if (missedQuestions.length === 0) {
+                reviewContainer.classList.add('hidden');
+            } else {
+                reviewContainer.classList.remove('hidden');
+                missedQuestions.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'bg-slate-900/70 border border-slate-700/60 rounded-lg p-3 text-xs flex justify-between items-center';
+                    row.innerHTML = `
+                        <div>
+                            <span class="font-bold text-slate-200 text-sm">${item.element.symbol}</span> 
+                            <span class="text-slate-400">(${item.element.name})</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-rose-400 line-through mr-2">${item.userAnswer}</span>
+                            <span class="text-emerald-400 font-bold"><i class="fa-solid fa-check text-xs mr-0.5"></i>${item.correctAnswer}</span>
+                        </div>
+                    `;
+                    reviewList.appendChild(row);
+                });
+            }
+        }
+
+        // Restart with fresh shuffle
+        function restartQuiz() {
+            startQuiz();
+        }
+
+        // Return to setup menu
+        function returnToMenu() {
+            document.getElementById('result-card').classList.add('hidden');
+            document.getElementById('quiz-card').classList.add('hidden');
+            document.getElementById('start-card').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
+```
